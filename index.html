@@ -73,7 +73,7 @@
   .logo {
     width: 82%;
     max-width: 360px;
-    margin-top: 9%;
+    margin-top: 7%;
     object-fit: contain;
     filter: drop-shadow(0 6px 10px rgba(150,120,150,0.35));
     animation: logoIn .5s cubic-bezier(.2,1.4,.4,1) both;
@@ -82,7 +82,7 @@
 
   /* 로딩바 */
   .load-center {
-    width: 200px; height: 200px; object-fit: contain; margin: auto;
+    width: min(200px, 42%); height: auto; object-fit: contain; margin: auto;   /* 세로 짧은 화면에서 함께 축소 */
     /* 등장: 아래에서 위로 페이드인 → 이후 둥실둥실 */
     animation: riseIn 1.2s cubic-bezier(.2, .8, .3, 1) .25s both,
                floatY 1.1s ease-in-out 1.45s infinite;
@@ -139,7 +139,7 @@
     font-size: 14px; text-shadow: 0 1px 0 #fff; }
 
   /* 메뉴 */
-  .menu { margin-top: 0; margin-bottom: 12%; display: flex; flex-direction: column;
+  .menu { margin-top: 0; margin-bottom: 7%; display: flex; flex-direction: column;
     align-items: center; gap: 14px; animation: pop .35s ease both; }
   @keyframes pop { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   .btn {
@@ -159,8 +159,8 @@
   .btn-img img { width: 100%; height: auto; display: block; }
   .btn-img:hover { filter: drop-shadow(0 6px 10px rgba(224,112,154,0.3)) brightness(1.05); }
   .btn-img:active { transform: translateY(3px) scale(.97); }
-  .btn-play { width: 250px; }
-  .btn-shop { width: 175px; }
+  .btn-play { width: min(250px, 62%); }   /* 좁은 화면에서 함께 축소 */
+  .btn-shop { width: min(175px, 43%); }
   .btn-sub {
     font-size: 16px; padding: 10px 30px; min-width: 150px;
     background: linear-gradient(180deg, #b6e3a6 0%, #8fce7f 100%);
@@ -329,8 +329,8 @@
     border-color: #6fae5f; box-shadow: 0 2.5px 0 #5fa64f; cursor: default;
   }
   .shop-caption {
-    position: absolute; left: 18%; right: 18%; bottom: 2.1%; transform: translateY(-50%);
-    text-align: center; font-size: 16px; font-weight: 800; color: #a9764f;
+    position: absolute; left: 12%; right: 12%; bottom: 2.1%; transform: translateY(-50%);
+    text-align: center; font-size: clamp(8px, 2.5vw, 14px); font-weight: 800; color: #a9764f;
     white-space: nowrap; pointer-events: none; z-index: 4;
   }
   .shop-modal {
@@ -1322,11 +1322,11 @@
     // 무적 게이지 (HUD 아래)
     if (state === 'playing' && player.invuln > 0) {
       const t = player.invuln / INVULN_TIME;
-      const bw = 120, bx = (W - bw) / 2, by = CY + pillH / 2 + 14, bh = 9;
+      const bw = 120, bx = (W - bw) / 2, by = CY + pillH / 2 + 26, bh = 9;
       ctx.textAlign = 'center';
       ctx.font = 'bold 13px sans-serif';
       ctx.fillStyle = '#e8a11a';
-      ctx.fillText('✨ 무적 ' + player.invuln.toFixed(1) + 's', W / 2, by - 4);
+      ctx.fillText('무적 ' + player.invuln.toFixed(1) + 's', W / 2, by - 5);
       ctx.fillStyle = 'rgba(180,140,60,0.25)';
       roundRect(bx, by, bw, bh, 4); ctx.fill();
       const grad = ctx.createLinearGradient(bx, 0, bx + bw, 0);
