@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>모찌점프 🍡</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
 <style>
   html, body {
     margin: 0;
@@ -56,15 +59,17 @@
   .back-hud {
     position: absolute; top: 10px; left: 10px; z-index: 3;
     appearance: none; border: none; cursor: pointer; font-family: inherit;
-    font-weight: 800; font-size: 13px; color: #7a5a70;
-    padding: 7px 14px; border-radius: 999px;
-    background: rgba(255,255,255,0.82);
-    border: 1.5px solid #f0d3e0;
-    box-shadow: 0 3px 8px rgba(150,120,150,0.25);
-    transition: transform .06s, filter .1s;
+    font-weight: 800; font-size: 12px; color: #fff; letter-spacing: .5px;
+    padding: 7px 15px 8px; border-radius: 999px;
+    background: linear-gradient(180deg, #ffb1cc 0%, #ff8fb3 100%);
+    border: 1.5px solid #f279a0;
+    box-shadow: 0 3px 0 #e0709a, 0 5px 10px rgba(224,112,154,0.35);
+    text-shadow: 0 1px 0 rgba(0,0,0,0.12);
+    transition: transform .06s, box-shadow .06s, filter .1s;
+    opacity: .92;
   }
-  .back-hud:hover { filter: brightness(1.03); }
-  .back-hud:active { transform: translateY(2px); }
+  .back-hud:hover { filter: brightness(1.05); opacity: 1; }
+  .back-hud:active { transform: translateY(3px); box-shadow: 0 0 0 #e0709a, 0 2px 6px rgba(224,112,154,0.35); }
   .back-hud.hidden { display: none; }
 
   /* 로고 */
@@ -85,6 +90,31 @@
     filter: drop-shadow(0 10px 8px rgba(150,120,150,0.3));
   }
   @keyframes floatY { 0%,100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-16px) rotate(3deg); } }
+  /* 떡 텍스처 LOADING 글자 (CSS) */
+  .load-title {
+    margin: auto;
+    display: flex;
+    gap: 1px;
+    user-select: none;
+  }
+  .load-title span {
+    font-family: 'Jua', 'Arial Rounded MT Bold', 'Malgun Gothic', sans-serif;
+    font-size: 58px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: transparent;
+    background: linear-gradient(180deg, #fffef9 0%, #fbf2e0 45%, #f0dfc0 85%, #eed8b6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-stroke: 2.5px #c69a68;
+    filter: drop-shadow(0 4px 0 #d9b98f) drop-shadow(0 7px 8px rgba(180,140,95,0.35));
+    animation: ldBounce 1.15s ease-in-out infinite;
+  }
+  @keyframes ldBounce {
+    0%, 60%, 100% { transform: translateY(0) scale(1, 1); }
+    25% { transform: translateY(-14px) scale(0.96, 1.06); }
+    45% { transform: translateY(2px) scale(1.05, 0.94); }
+  }
   .loadbar-wrap {
     position: absolute; left: 10%; bottom: 9%; width: 80%;
   }
@@ -158,12 +188,70 @@
     background: linear-gradient(180deg, #cdb8d6 0%, #ab8fbe 100%);
     box-shadow: 0 4px 0 #8a6ba0, 0 6px 12px rgba(138,107,160,0.3);
   }
+
+  /* ---- 상점 (카드형) ---- */
+  .shop-frame { position: relative; height: 100%; aspect-ratio: 941 / 1672; margin: 0 auto; }
+  .shop-bg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .shop-back {
+    position: absolute; top: 2.2%; left: 3.5%; z-index: 4;
+    appearance: none; border: none; cursor: pointer; font-family: inherit;
+    font-weight: 800; font-size: 12px; color: #a05a4a;
+    padding: 5px 12px; border-radius: 999px;
+    background: rgba(255,255,255,0.88); border: 1.5px solid #eec4ac;
+    box-shadow: 0 3px 6px rgba(150,110,90,0.3);
+  }
+  .shop-back:active { transform: translateY(2px); }
+  /* 상단 UI 알약 위 재화 표시 */
+  .cur-coin, .cur-gem {
+    position: absolute; top: 23.9%; height: 4.1%;
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    font-weight: 800; font-size: 13px; color: #7a5a3a; pointer-events: none;
+  }
+  .cur-coin { left: 54%; width: 20%; }
+  .cur-gem  { left: 75.5%; width: 22%; }
+  .shop-grid {
+    position: absolute; left: 6.5%; right: 6.5%; top: 35.8%; bottom: 8.8%;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 8px;
+    align-content: start; overflow-y: auto; padding: 4px 3px 8px;
+    scrollbar-width: thin;
+  }
+  .skin-card {
+    background: #fffdf6; border: 2px solid #eed9c3; border-radius: 14px;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 7px 6px 8px; gap: 6px;
+    box-shadow: 0 3px 6px rgba(180,140,110,0.15);
+  }
+  .skin-card .ttl {
+    width: 100%; box-sizing: border-box; text-align: center;
+    font-size: 10.5px; font-weight: 800; color: #9a6a52;
+    background: #fdf1e4; border: 1.5px solid #ecd3b8; border-radius: 999px;
+    padding: 3px 2px; white-space: nowrap; overflow: hidden;
+  }
+  .skin-card img { width: 74%; aspect-ratio: 1; object-fit: contain;
+    filter: drop-shadow(0 3px 3px rgba(150,120,120,0.22)); }
+  .skin-btn {
+    appearance: none; border: none; cursor: pointer; font-family: inherit;
+    width: 100%; padding: 5px 0; border-radius: 999px;
+    font-size: 11.5px; font-weight: 800; color: #fff; letter-spacing: .5px;
+    background: linear-gradient(180deg, #ff9db8 0%, #f2789c 100%);
+    border: 1.5px solid #e7688e;
+    box-shadow: 0 2.5px 0 #d55a80;
+  }
+  .skin-btn:active { transform: translateY(2px); box-shadow: 0 .5px 0 #d55a80; }
+  .skin-btn.own {
+    background: #fff; color: #e7688e;
+  }
+  .skin-btn.equipped {
+    background: linear-gradient(180deg, #b6e3a6 0%, #8fce7f 100%);
+    border-color: #6fae5f; box-shadow: 0 2.5px 0 #5fa64f; cursor: default;
+  }
+  .skin-btn.poor { filter: grayscale(.6) brightness(1.05); cursor: not-allowed; }
 </style>
 </head>
 <body>
 <div id="wrap">
   <canvas id="game"></canvas>
-  <button id="backBtn" class="back-hud hidden">← 메뉴</button>
+  <button id="backBtn" class="back-hud hidden">🏠 메뉴</button>
   <div id="overlay"></div>
 </div>
 <script>
@@ -215,7 +303,12 @@
     shop:  'img/monster(mochi shop).png',
     logo:  'img/game logo.png',
     bg:    'img/game loading bg.jpg',
-    loadmochi: 'img/game loading mochi jump.png'
+    loadmochi: 'img/game loading mochi jump.png',
+    shopui: 'img/shop UI.png',
+    skin_strawberry: 'img/strawberry mochi.png',
+    skin_matcha:     'img/matcha.png',
+    skin_injeolmi:   'img/injeolmi.png',
+    skin_sesame:     'img/black sesame.png'
   };
   // 페이지 로드 시각을 버전으로 붙여 캐시 무효화 (이미지 수정 후 새로고침만 하면 반영)
   const IMGVER = Date.now();
@@ -254,6 +347,35 @@
   const LOAD_DUR = 2.4; // 로딩바 채우는 시간(초)
 
   best = parseInt(localStorage.getItem(BEST_KEY) || '0', 10) || 0;
+
+  // ---- 스킨 & 코인 ----
+  const SKIN_KEY = 'mochijump-skin';
+  const COIN_KEY = 'mochijump-coins';
+  const OWNED_KEY = 'mochijump-owned';
+  const SKINS = [
+    { id: 'default',    name: '기본 모찌 스킨', key: null,              price: 0 },
+    { id: 'strawberry', name: '딸기 모찌 스킨', key: 'skin_strawberry', price: 1000 },
+    { id: 'matcha',     name: '말차 모찌 스킨', key: 'skin_matcha',     price: 1000 },
+    { id: 'injeolmi',   name: '인절미 모찌 스킨', key: 'skin_injeolmi', price: 1000 },
+    { id: 'sesame',     name: '흑임자 모찌 스킨', key: 'skin_sesame',   price: 1000 }
+  ];
+  let equippedSkin = localStorage.getItem(SKIN_KEY) || 'default';
+  let coins = parseInt(localStorage.getItem(COIN_KEY) || '0', 10) || 0;
+  let ownedSkins;
+  try { ownedSkins = new Set(JSON.parse(localStorage.getItem(OWNED_KEY) || '["default"]')); }
+  catch (e) { ownedSkins = new Set(['default']); }
+  ownedSkins.add('default');
+  function saveShop() {
+    localStorage.setItem(COIN_KEY, String(coins));
+    localStorage.setItem(OWNED_KEY, JSON.stringify([...ownedSkins]));
+    localStorage.setItem(SKIN_KEY, equippedSkin);
+  }
+  function currentSkinImage() {
+    const s = SKINS.find(x => x.id === equippedSkin);
+    if (!s || !s.key) return null;         // 기본 모찌는 4프레임 세트 사용
+    const im = IMG[s.key];
+    return ready(im) ? im : null;
+  }
 
   function rand(a, b) { return a + Math.random() * (b - a); }
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
@@ -407,6 +529,8 @@
   function endGame(cause) {
     state = 'gameover';
     deathBy = cause;
+    coins += score; // 점수만큼 코인 획득
+    saveShop();
     if (score > best) {
       best = score;
       isNewBest = true;
@@ -763,7 +887,7 @@
 
   function drawMochi() {
     const p = player;
-    const im = pickMochiSprite();
+    const im = currentSkinImage() || pickMochiSprite(); // 스킨 장착 시 스킨 이미지 사용
 
     // 무적(발광) 상태: 후광 + 종료 직전 깜빡임
     const inv = p.invuln > 0;
@@ -908,13 +1032,13 @@
     const subC = theme.dark ? 'rgba(255,255,255,0.75)' : '#a888a0';
     // 점수는 상단 중앙 (좌측 상단 '메뉴' 버튼과 겹치지 않게)
     ctx.fillStyle = main;
-    ctx.font = 'bold 20px sans-serif';
+    ctx.font = 'bold 14px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('점수 ' + score, W / 2, 28);
+    ctx.fillText('점수 ' + score, W / 2, 24);
     ctx.textAlign = 'right';
-    ctx.font = 'bold 15px sans-serif';
+    ctx.font = 'bold 11px sans-serif';
     ctx.fillStyle = subC;
-    ctx.fillText('최고 ' + best, W - 14, 26);
+    ctx.fillText('최고 ' + best, W - 12, 22);
 
     // 무적 게이지 (점수 아래)
     if (state === 'playing' && player.invuln > 0) {
@@ -959,8 +1083,10 @@
     overlay.style.backgroundImage = "url('" + bgURL + "')";
 
     if (state === 'loading') {
+      const letters = 'LOADING'.split('').map((c, i) =>
+        '<span style="animation-delay:' + (i * 0.09).toFixed(2) + 's">' + c + '</span>').join('');
       overlay.innerHTML =
-        logoTag +
+        '<div class="load-title">' + letters + '</div>' +
         '<div class="loadbar-wrap">' +
           '<div class="loadbar-char" id="loadChar"><img src="' + u('idle') + '" alt=""></div>' +
           '<div class="loadbar-track"><div class="loadbar-fill" id="loadFill"></div></div>' +
@@ -993,6 +1119,7 @@
           '<h1>GAME OVER</h1>' +
           '<p class="tag">' + causeText + '</p>' +
           '<div class="score">점수 ' + score + ' · 최고 ' + best + '</div>' +
+          '<div class="score" style="color:#d19a2a">🪙 +' + score.toLocaleString() + ' (보유 ' + coins.toLocaleString() + ')</div>' +
           (isNewBest ? '<div class="newbest">🎉 신기록! 🎉</div>' : '') +
           '<div class="row">' +
             '<button class="btn btn-start" id="btnRetry">다시 시작</button>' +
@@ -1013,24 +1140,17 @@
     if (ch) ch.style.left = p + '%';
   }
 
-  // SHOP / SETTING 패널 (준비 중)
+  // SHOP (모찌 스킨 상점) / SETTING
   function showPanel(kind) {
+    if (kind === 'shop') { renderShop(); return; }
     overlay.style.backgroundImage = "url('" + bgURL + "')";
-    let inner;
-    if (kind === 'shop') {
-      inner =
-        '<img class="mochi-load" src="' + u('honey') + '" alt="">' +
-        '<h1>SHOP</h1>' +
-        '<p class="msg">모찌 상점은 곧 열려요! 🛍️<br>스킨과 아이템을 준비 중이에요.</p>';
-    } else {
-      inner =
-        '<img class="mochi-load" src="' + u('idle') + '" alt="">' +
-        '<h1>SETTING</h1>' +
-        '<p class="msg">최고 점수: <b>' + best + '</b></p>' +
-        '<div class="row">' +
-          '<button class="btn btn-sub" id="btnReset">기록 초기화</button>' +
-        '</div>';
-    }
+    const inner =
+      '<img class="mochi-load" src="' + u('idle') + '" alt="">' +
+      '<h1>SETTING</h1>' +
+      '<p class="msg">최고 점수: <b>' + best + '</b></p>' +
+      '<div class="row">' +
+        '<button class="btn btn-sub" id="btnReset">기록 초기화</button>' +
+      '</div>';
     overlay.innerHTML = '<div class="card">' + inner +
       '<div class="row"><button class="btn btn-back" id="btnBack">뒤로</button></div></div>';
     byId('btnBack').addEventListener('click', () => { state = 'ready'; updateOverlay(); });
@@ -1041,10 +1161,67 @@
     });
   }
 
+  function renderShop() {
+    overlay.style.backgroundImage = "url('" + bgURL + "')";
+    let cards = '';
+    for (const s of SKINS) {
+      const src = s.key ? u(s.key) : u('idle');
+      const owned = ownedSkins.has(s.id);
+      const equipped = s.id === equippedSkin;
+      let btn;
+      if (equipped) {
+        btn = '<button class="skin-btn equipped" data-skin="' + s.id + '">장착중 ✓</button>';
+      } else if (owned) {
+        btn = '<button class="skin-btn own" data-skin="' + s.id + '">장착하기</button>';
+      } else {
+        const poor = coins < s.price;
+        btn = '<button class="skin-btn' + (poor ? ' poor' : '') + '" data-skin="' + s.id + '">🪙 ' + s.price.toLocaleString() + '</button>';
+      }
+      cards +=
+        '<div class="skin-card" data-skin="' + s.id + '">' +
+          '<div class="ttl">' + s.name + '</div>' +
+          '<img src="' + src + '" alt="">' +
+          btn +
+        '</div>';
+    }
+    overlay.innerHTML =
+      '<div class="shop-frame">' +
+        '<img class="shop-bg" src="' + u('shopui') + '" alt="상점">' +
+        '<button class="shop-back" id="btnBack">← 뒤로</button>' +
+        '<div class="cur-coin">🪙 ' + coins.toLocaleString() + '</div>' +
+        '<div class="cur-gem">💎 0</div>' +
+        '<div class="shop-grid">' + cards + '</div>' +
+      '</div>';
+    byId('btnBack').addEventListener('click', () => { state = 'ready'; updateOverlay(); });
+    overlay.querySelectorAll('.skin-btn').forEach(el => {
+      el.addEventListener('click', () => {
+        const id = el.getAttribute('data-skin');
+        const s = SKINS.find(x => x.id === id);
+        if (!s) return;
+        if (ownedSkins.has(id)) {
+          equippedSkin = id;          // 보유 → 장착
+        } else if (coins >= s.price) {
+          coins -= s.price;           // 구매 → 즉시 장착
+          ownedSkins.add(id);
+          equippedSkin = id;
+        } else {
+          return; // 코인 부족
+        }
+        saveShop();
+        renderShop();
+      });
+    });
+  }
+
   // ---- 디버그 훅 (?debug 로 열었을 때만) ----
   if (location.search.includes('debug')) {
     window.__mochi = {
       boost(px) { totalScroll += px; },
+      openShop() { showPanel('shop'); return 'shop open'; },
+      equip(id) { equippedSkin = id; localStorage.setItem(SKIN_KEY, id); return 'equipped ' + id; },
+      getSkin() { return equippedSkin; },
+      addCoins(n) { coins += n; saveShop(); return coins; },
+      getShop() { return { coins, owned: [...ownedSkins], equipped: equippedSkin }; },
       spawnMonster() { monsters.push({ x: player.x, y: player.y, vx: 0, bob: 0, phase: 0, hue: 0 }); },
       spawnItem() { items.push({ x: player.x, y: player.y - 60, phase: 0, taken: false }); return 'item placed'; },
       giveInvuln() { player.invuln = INVULN_TIME; return 'invuln on'; },
