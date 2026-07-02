@@ -243,7 +243,37 @@
     background: linear-gradient(180deg, #b6e3a6 0%, #8fce7f 100%);
     border-color: #6fae5f; box-shadow: 0 2.5px 0 #5fa64f; cursor: default;
   }
-  .skin-btn.poor { filter: grayscale(.6) brightness(1.05); cursor: not-allowed; }
+  .shop-caption {
+    position: absolute; left: 18%; right: 18%; bottom: 2.1%; transform: translateY(-50%);
+    text-align: center; font-size: 16px; font-weight: 800; color: #a9764f;
+    white-space: nowrap; pointer-events: none; z-index: 4;
+  }
+  .shop-modal {
+    position: absolute; inset: 0; z-index: 10; display: flex;
+    align-items: center; justify-content: center;
+    background: rgba(70,45,35,0.38); opacity: 0; pointer-events: none;
+    transition: opacity .15s ease;
+  }
+  .shop-modal.show { opacity: 1; pointer-events: auto; }
+  .shop-modal-card {
+    background: linear-gradient(180deg, #fffdf6 0%, #fff3e2 100%);
+    border: 3px solid #f7c9a6; border-radius: 24px;
+    padding: 22px 28px 18px; text-align: center; max-width: 76%;
+    box-shadow: 0 14px 30px rgba(150,100,80,0.35);
+    animation: pop .22s ease both;
+  }
+  .shop-modal-card .icon { font-size: 38px; display: block; margin-bottom: 6px;
+    animation: bob .7s ease-in-out infinite; }
+  .shop-modal-card .msg { font-size: 14px; font-weight: 800; color: #8a5a42;
+    line-height: 1.6; margin: 4px 0 16px; }
+  .shop-modal-card button {
+    appearance: none; border: none; cursor: pointer; font-family: inherit;
+    font-weight: 800; color: #fff; border-radius: 999px; padding: 9px 34px;
+    font-size: 13px; letter-spacing: .5px;
+    background: linear-gradient(180deg, #ff9db8 0%, #f2789c 100%);
+    border: 1.5px solid #e7688e; box-shadow: 0 3px 0 #d55a80;
+  }
+  .shop-modal-card button:active { transform: translateY(2px); box-shadow: 0 1px 0 #d55a80; }
 </style>
 </head>
 <body>
@@ -1172,8 +1202,7 @@
       } else if (owned) {
         btn = '<button class="skin-btn own" data-skin="' + s.id + '">장착하기</button>';
       } else {
-        const poor = coins < s.price;
-        btn = '<button class="skin-btn' + (poor ? ' poor' : '') + '" data-skin="' + s.id + '">🪙 ' + s.price.toLocaleString() + '</button>';
+        btn = '<button class="skin-btn" data-skin="' + s.id + '">🪙 ' + s.price.toLocaleString() + '</button>';
       }
       cards +=
         '<div class="skin-card" data-skin="' + s.id + '">' +
@@ -1188,8 +1217,21 @@
         '<button class="shop-back" id="btnBack">← 뒤로</button>' +
         '<div class="cur-coin">' + coins.toLocaleString() + '</div>' +
         '<div class="shop-grid">' + cards + '</div>' +
+        '<div class="shop-caption">새로운 모찌와 함께 더 높이 올라가요</div>' +
+        '<div class="shop-modal" id="shopModal">' +
+          '<div class="shop-modal-card">' +
+            '<span class="icon">🪙</span>' +
+            '<div class="msg">모찌코인이 부족해요</div>' +
+            '<button id="shopModalOk">확인</button>' +
+          '</div>' +
+        '</div>' +
       '</div>';
     byId('btnBack').addEventListener('click', () => { state = 'ready'; updateOverlay(); });
+    const shopModal = byId('shopModal');
+    function showShopModal() { shopModal.classList.add('show'); }
+    function hideShopModal() { shopModal.classList.remove('show'); }
+    shopModal.addEventListener('click', (e) => { if (e.target === shopModal) hideShopModal(); });
+    byId('shopModalOk').addEventListener('click', hideShopModal);
     overlay.querySelectorAll('.skin-btn').forEach(el => {
       el.addEventListener('click', () => {
         const id = el.getAttribute('data-skin');
@@ -1202,7 +1244,8 @@
           ownedSkins.add(id);
           equippedSkin = id;
         } else {
-          return; // 코인 부족
+          showShopModal(); // 코인 부족
+          return;
         }
         saveShop();
         renderShop();
