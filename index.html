@@ -253,6 +253,80 @@
   }
   .go-home img { width: 20px; height: 20px; object-fit: contain; }
   .go-home:active { transform: translateY(2px); box-shadow: 0 1px 0 #e6cfae; }
+
+  /* ---- 설정 카드 ---- */
+  .set-card {
+    position: relative; width: 86%; max-width: 320px; margin: auto;
+    background: linear-gradient(180deg, #fdf4e6 0%, #f9ecd9 100%);
+    border: 3px solid #f0dcc0; border-radius: 30px;
+    padding: 52px 20px 20px; text-align: center;
+    box-shadow: 0 16px 40px rgba(180,150,110,0.3);
+    animation: pop .35s ease both;
+  }
+  .set-top {
+    position: absolute; top: -44px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; justify-content: center;
+    filter: drop-shadow(0 6px 7px rgba(170,140,110,0.28));
+  }
+  .set-top .m { width: 82px; height: 82px; object-fit: contain; }
+  .set-top .g { width: 44px; height: 44px; object-fit: contain; margin-left: -16px; margin-top: -20px;
+    animation: gearSpin 6s linear infinite; }
+  @keyframes gearSpin { to { transform: rotate(360deg); } }
+  .set-title {
+    margin: 4px 0 16px; font-family: 'Jua', sans-serif; font-size: 34px; color: #7a5334;
+    line-height: 1; text-shadow: 0 3px 0 #efdcc2;
+  }
+  .set-title .spk { color: #ffb0c4; font-size: 18px; vertical-align: 6px; margin: 0 12px; }
+  .set-row {
+    display: flex; align-items: center; gap: 12px;
+    background: #fffdf8; border: 2px solid #f2e2cc; border-radius: 18px;
+    padding: 12px 14px; margin: 0 0 12px;
+    box-shadow: inset 0 2px 3px rgba(255,255,255,0.9), 0 3px 6px rgba(190,160,120,0.12);
+  }
+  .set-row .ico { width: 26px; height: 26px; object-fit: contain; flex: none; }
+  .set-row .label { font-family: 'Jua', sans-serif; font-size: 17px; color: #6d5238; flex: 1; text-align: left; }
+  /* 토글 스위치 */
+  .toggle {
+    position: relative; width: 72px; height: 32px; flex: none;
+    appearance: none; border: none; cursor: pointer; padding: 0;
+    border-radius: 999px; transition: background .2s;
+    box-shadow: inset 0 2px 5px rgba(150,110,90,0.22);
+  }
+  .toggle.on  { background: linear-gradient(180deg, #ffc2d6, #ff9fbe); }
+  .toggle.off { background: linear-gradient(180deg, #e4ded4, #cec6ba); }
+  .toggle .txt {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    font-family: 'Jua', sans-serif; font-size: 12px; color: #fff; letter-spacing: .5px;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.12);
+  }
+  .toggle.on  .txt { left: 13px; }
+  .toggle.off .txt { right: 11px; }
+  .toggle .knob {
+    position: absolute; top: 50%; width: 28px; height: 28px; object-fit: contain;
+    transform: translateY(-50%); transition: left .2s cubic-bezier(.3,1.3,.5,1);
+    filter: drop-shadow(0 2px 2px rgba(150,110,90,0.3));
+  }
+  .toggle.on  .knob { left: calc(100% - 30px); }
+  .toggle.off .knob { left: 2px; }
+  .set-divider { border: none; border-top: 2px dashed #ecd9bf; margin: 16px 8px; }
+  .set-reset {
+    display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+    margin: 0 auto 12px; padding: 11px 26px; border: 2px solid #efdcc0; cursor: pointer;
+    border-radius: 999px; font-family: 'Jua', sans-serif; font-size: 16px; color: #9a734b;
+    background: linear-gradient(180deg, #fffdf8, #f7ead6);
+    box-shadow: 0 4px 0 #e7d2b2; transition: transform .06s, box-shadow .06s;
+  }
+  .set-reset img { width: 20px; height: 20px; object-fit: contain; }
+  .set-reset:active { transform: translateY(2px); box-shadow: 0 2px 0 #e7d2b2; }
+  .set-close {
+    display: block; width: 100%; box-sizing: border-box; padding: 14px 0; border: none; cursor: pointer;
+    border-radius: 999px; font-family: 'Jua', sans-serif; font-size: 22px; color: #fff;
+    background: linear-gradient(180deg, #ffb3cb 0%, #f487a8 100%);
+    box-shadow: 0 6px 0 #de6f93, 0 10px 16px rgba(222,111,147,0.32);
+    transition: transform .06s, box-shadow .06s;
+  }
+  .set-close .face { color: rgba(255,255,255,0.85); font-size: 15px; margin: 0 12px; letter-spacing: 2px; }
+  .set-close:active { transform: translateY(4px); box-shadow: 0 2px 0 #de6f93, 0 4px 10px rgba(222,111,147,0.32); }
   .btn-back {
     font-size: 15px; padding: 9px 26px;
     background: linear-gradient(180deg, #cdb8d6 0%, #ab8fbe 100%);
@@ -455,7 +529,12 @@
     bestboard: 'img/highest score.png',
     failcry: 'img/mochi fail cry.png',
     bg1: 'img/bg1.png', bg2: 'img/bg2.png', bg3: 'img/bg3.png',
-    bg4: 'img/bg4.png', bg5: 'img/bg5.png', bg6: 'img/bg6.png'
+    bg4: 'img/bg4.png', bg5: 'img/bg5.png', bg6: 'img/bg6.png',
+    setgear: 'img/settings icon.png',
+    icoMusic: 'img/bg music icoin.png',
+    icoStar: 'img/fx sound effect icon.png',
+    icoReset: 'img/record reset icon.png',
+    tglKnob: 'img/toggle icon.png'
   };
   // 페이지 로드 시각을 버전으로 붙여 캐시 무효화 (이미지 수정 후 새로고침만 하면 반영)
   const IMGVER = Date.now();
@@ -473,15 +552,22 @@
   }
   function ready(im) { return im && im.complete && im.naturalWidth > 0; }
 
-  // ---- 효과음 (Web Audio: 오실레이터 합성 — 별도 음원 없이 빠른 연속 재생 대응) ----
-  let audioCtx = null;
+  // ---- 오디오 (Web Audio: 효과음·배경음악 모두 오실레이터 합성) ----
+  let audioCtx = null, sfxGain = null, bgmGain = null;
   try {
     const AC = window.AudioContext || window.webkitAudioContext;
-    if (AC) audioCtx = new AC();          // 생성 시엔 suspended, 사용자 입력 후 resume
+    if (AC) {
+      audioCtx = new AC();                 // 생성 시엔 suspended, 사용자 입력 후 resume
+      sfxGain = audioCtx.createGain(); sfxGain.gain.value = 1.0; sfxGain.connect(audioCtx.destination);
+      bgmGain = audioCtx.createGain(); bgmGain.gain.value = 0.42; bgmGain.connect(audioCtx.destination);
+    }
   } catch (e) { audioCtx = null; }
+  // 사운드 on/off (설정에서 토글, localStorage 유지)
+  let sfxOn = localStorage.getItem('mochijump-sfx') !== '0';
+  let bgmOn = localStorage.getItem('mochijump-bgm') !== '0';
   function resumeAudio() { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); }
   function playJump() {   // 점프: 위로 통통 튀는 상승 음
-    if (!audioCtx) return; resumeAudio();
+    if (!audioCtx || !sfxOn) return; resumeAudio();
     const t0 = audioCtx.currentTime;
     const osc = audioCtx.createOscillator();
     const g = audioCtx.createGain();
@@ -491,7 +577,7 @@
     g.gain.setValueAtTime(0.0001, t0);
     g.gain.linearRampToValueAtTime(0.5, t0 + 0.015);
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.2);
-    osc.connect(g).connect(audioCtx.destination);
+    osc.connect(g).connect(sfxGain);
     osc.start(t0); osc.stop(t0 + 0.22);
   }
   // 합성 효과음 (오실레이터) — 별도 음원 파일 없이 생성
@@ -505,26 +591,71 @@
     g.gain.setValueAtTime(0.0001, t0);
     g.gain.linearRampToValueAtTime(peak, t0 + 0.012);
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-    osc.connect(g).connect(audioCtx.destination);
+    osc.connect(g).connect(sfxGain);
     osc.start(t0); osc.stop(t0 + dur + 0.03);
   }
   function playPickup() {   // 아이템 획득: 밝게 상승하는 반짝임
-    if (!audioCtx) return; resumeAudio();
+    if (!audioCtx || !sfxOn) return; resumeAudio();
     tone(880, 0, 0.12, 'triangle', 0.30);
     tone(1320, 0.07, 0.13, 'triangle', 0.28);
     tone(1760, 0.15, 0.16, 'sine', 0.22);
   }
   function playLand() {     // 착지: 부드럽고 짧은 통통
-    if (!audioCtx) return; resumeAudio();
+    if (!audioCtx || !sfxOn) return; resumeAudio();
     tone(200, 0, 0.09, 'sine', 0.22);
     tone(130, 0.015, 0.11, 'sine', 0.16);
   }
   function playGameOver() { // 게임오버: 아래로 떨어지는 3음
-    if (!audioCtx) return; resumeAudio();
+    if (!audioCtx || !sfxOn) return; resumeAudio();
     tone(523, 0, 0.20, 'triangle', 0.30);
     tone(392, 0.17, 0.22, 'triangle', 0.30);
     tone(262, 0.36, 0.45, 'triangle', 0.30);
   }
+
+  // ---- 배경음악 (합성 루프, C장조 펜타토닉의 몽글한 멜로디 + 베이스) ----
+  const NOTE = {
+    'F2': 87.31, 'G2': 98.00, 'A2': 110.00, 'C3': 130.81,
+    'A4': 440.00, 'C5': 523.25, 'D5': 587.33, 'E5': 659.25,
+    'G5': 783.99, 'A5': 880.00, 'C6': 1046.50, 0: 0
+  };
+  const BGM_BPM = 118, BEAT = 60 / BGM_BPM, STEP = BEAT / 2; // 8분음표 스텝
+  const MELODY = [
+    'E5','G5','A5','G5', 'E5','D5','C5', 0,
+    'D5','E5','G5','E5', 'D5','C5','D5', 0,
+    'E5','G5','A5','C6', 'A5','G5','E5', 0,
+    'D5','E5','D5','C5', 'A4','C5','D5', 0
+  ];
+  const BASS = ['C3','C3','A2','A2','F2','F2','G2','G2']; // 4스텝마다 (C-Am-F-G)
+  let bgmStep = 0, bgmNextTime = 0;
+  function bgmNote(freq, t, dur, type, peak) {
+    if (!freq || !audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(peak, t + 0.03);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(g).connect(bgmGain);
+    osc.start(t); osc.stop(t + dur + 0.05);
+  }
+  function scheduleBgm() {   // 게임 루프에서 매 프레임 호출 (앞으로 여유분만 예약)
+    if (!audioCtx || !bgmOn || audioCtx.state !== 'running') return;
+    if (bgmNextTime < audioCtx.currentTime) bgmNextTime = audioCtx.currentTime + 0.05; // 백그라운드 복귀 시 재동기화
+    while (bgmNextTime < audioCtx.currentTime + 0.2) {
+      const t = bgmNextTime;
+      const mel = MELODY[bgmStep % MELODY.length];
+      if (mel) bgmNote(NOTE[mel], t, STEP * 0.95, 'triangle', 0.13);
+      if (bgmStep % 4 === 0) {
+        const b = BASS[Math.floor(bgmStep / 4) % BASS.length];
+        if (b) bgmNote(NOTE[b], t, BEAT * 1.7, 'sine', 0.15);
+      }
+      bgmStep++;
+      bgmNextTime += STEP;
+    }
+  }
+  function setBgm(on) { bgmOn = on; localStorage.setItem('mochijump-bgm', on ? '1' : '0'); if (on && audioCtx) { bgmNextTime = audioCtx.currentTime + 0.05; resumeAudio(); } }
+  function setSfx(on) { sfxOn = on; localStorage.setItem('mochijump-sfx', on ? '1' : '0'); }
   // 브라우저 자동재생 정책: 어떤 입력(버튼 클릭 포함)에서든 오디오 활성화
   ['pointerdown', 'click', 'keydown', 'touchstart'].forEach(ev =>
     document.addEventListener(ev, resumeAudio, { passive: true }));
@@ -1422,20 +1553,42 @@
   function showPanel(kind) {
     if (kind === 'shop') { renderShop(); return; }
     overlay.style.backgroundImage = "url('" + bgURL + "')";
-    const inner =
-      '<img class="mochi-load" src="' + u('idle') + '" alt="">' +
-      '<h1>SETTING</h1>' +
-      '<p class="msg">최고 점수: <b>' + best + '</b></p>' +
-      '<div class="row">' +
-        '<button class="btn btn-sub" id="btnReset">기록 초기화</button>' +
+    const tgl = (id, on, ico, label) =>
+      '<div class="set-row">' +
+        '<img class="ico" src="' + u(ico) + '" alt="">' +
+        '<span class="label">' + label + '</span>' +
+        '<button class="toggle ' + (on ? 'on' : 'off') + '" id="' + id + '">' +
+          '<span class="txt">' + (on ? 'ON' : 'OFF') + '</span>' +
+          '<img class="knob" src="' + u('tglKnob') + '" alt="">' +
+        '</button>' +
       '</div>';
-    overlay.innerHTML = '<div class="card">' + inner +
-      '<div class="row"><button class="btn btn-back" id="btnBack">뒤로</button></div></div>';
+    overlay.innerHTML =
+      '<div class="set-card">' +
+        '<div class="set-top"><img class="m" src="' + u('idle') + '" alt=""><img class="g" src="' + u('setgear') + '" alt=""></div>' +
+        '<h1 class="set-title"><span class="spk">✦</span>설정<span class="spk">✦</span></h1>' +
+        tgl('tglBgm', bgmOn, 'icoMusic', '배경음악') +
+        tgl('tglSfx', sfxOn, 'icoStar', '효과음') +
+        '<hr class="set-divider">' +
+        '<button class="set-reset" id="btnReset"><img src="' + u('icoReset') + '" alt="">게임 기록 초기화</button>' +
+        '<button class="set-close" id="btnBack"><span class="face">··</span>닫기<span class="face">··</span></button>' +
+      '</div>';
+    // 토글 동작
+    function bindToggle(id, get, set) {
+      const el = byId(id);
+      el.addEventListener('click', () => {
+        const next = !get();
+        set(next);
+        el.classList.toggle('on', next);
+        el.classList.toggle('off', !next);
+        el.querySelector('.txt').textContent = next ? 'ON' : 'OFF';
+      });
+    }
+    bindToggle('tglBgm', () => bgmOn, setBgm);
+    bindToggle('tglSfx', () => sfxOn, setSfx);
     byId('btnBack').addEventListener('click', () => { state = 'ready'; updateOverlay(); });
-    const rb = byId('btnReset');
-    if (rb) rb.addEventListener('click', () => {
+    byId('btnReset').addEventListener('click', () => {
       best = 0; isNewBest = false; localStorage.setItem(BEST_KEY, '0');
-      showPanel('setting');
+      playPickup(); // 초기화 확인 사운드
     });
   }
 
@@ -1512,7 +1665,9 @@
       getSkin() { return equippedSkin; },
       addCoins(n) { coins += n; saveShop(); return coins; },
       getShop() { return { coins, owned: [...ownedSkins], equipped: equippedSkin }; },
-      audioState() { return { ctx: audioCtx ? audioCtx.state : 'none' }; },
+      audioState() { return { ctx: audioCtx ? audioCtx.state : 'none', bgmOn, sfxOn, bgmStep }; },
+      setBgm(v) { setBgm(v); return bgmOn; },
+      setSfx(v) { setSfx(v); return sfxOn; },
       spawnMonster() { monsters.push({ x: player.x, y: player.y, vx: 0, bob: 0, phase: 0, hue: 0 }); },
       spawnItem() { items.push({ x: player.x, y: player.y - 60, phase: 0, taken: false }); return 'item placed'; },
       giveInvuln() { player.invuln = INVULN_TIME; return 'invuln on'; },
@@ -1549,6 +1704,7 @@
     nowSec = time / 1000;
     update(dt);
     render();
+    scheduleBgm();   // 배경음악 예약
     requestAnimationFrame(loop);
   }
   requestAnimationFrame(loop);
