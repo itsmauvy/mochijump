@@ -1,0 +1,426 @@
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: linear-gradient(180deg, #ffeef5 0%, #e8f4ff 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  }
+  #wrap {
+    position: relative;
+    /* 창이 좁든 넓든 항상 2:3 비율 유지 (비율 깨짐/이미지 잘림 방지) */
+    width: min(96vw, calc(96vh * 2 / 3));
+    aspect-ratio: 400 / 600;
+    border-radius: 16px;
+    box-shadow: 0 8px 40px rgba(180, 140, 180, 0.25);
+  }
+  #game {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border-radius: 16px;
+    touch-action: none;
+  }
+  /* ---- 오버레이 (로딩 / 타이틀 / 게임오버) ---- */
+  #overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 16px;
+    overflow: hidden;
+    background-color: #cfe6f5;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    user-select: none;
+    z-index: 2;
+  }
+  #overlay.hidden { display: none; }
+
+  /* 게임 중 상단 홈 버튼 (이미지) — 캔버스 점수판과 같은 비율(%)로 배치해 정렬 일치 */
+  .back-hud {
+    position: absolute; top: 2.33%; left: 1.5%; z-index: 3;
+    appearance: none; border: none; cursor: pointer;
+    padding: 0; background: none;
+    width: 11%; height: 7.333%;   /* 400×600 기준 44×44, 화면과 함께 스케일 */
+    filter: drop-shadow(0 3px 6px rgba(150,100,150,0.35));
+    transition: transform .06s, filter .1s;
+    opacity: .92;
+  }
+  .back-hud img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .back-hud:hover { filter: drop-shadow(0 3px 6px rgba(150,100,150,0.35)) brightness(1.06); opacity: 1; }
+  .back-hud:active { transform: translateY(2px) scale(.94); }
+  .back-hud.hidden { display: none; }
+
+  /* 로고 */
+  .logo {
+    width: 82%;
+    max-width: 360px;
+    margin-top: 7%;
+    object-fit: contain;
+    filter: drop-shadow(0 6px 10px rgba(150,120,150,0.35));
+    animation: logoIn .5s cubic-bezier(.2,1.4,.4,1) both;
+  }
+  @keyframes logoIn { from { transform: scale(.6) translateY(-10px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+
+  /* 로딩바 */
+  .load-center {
+    width: min(200px, 42%); height: auto; object-fit: contain; margin: auto;   /* 세로 짧은 화면에서 함께 축소 */
+    /* 등장: 아래에서 위로 페이드인 → 이후 둥실둥실 */
+    animation: riseIn 1.2s cubic-bezier(.2, .8, .3, 1) .25s both,
+               floatY 1.1s ease-in-out 1.45s infinite;
+    filter: drop-shadow(0 10px 8px rgba(150,120,150,0.3));
+  }
+  @keyframes riseIn {
+    from { opacity: 0; transform: translateY(48px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes floatY { 0%,100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-16px) rotate(3deg); } }
+  /* LOADING 글자 */
+  .load-title {
+    margin: auto;
+    display: flex;
+    gap: 1px;
+    user-select: none;
+  }
+  .load-title span {
+    font-family: 'Baloo 2', 'Jua', 'Arial Rounded MT Bold', 'Malgun Gothic', sans-serif;
+    font-size: 58px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #fff;
+    text-shadow: 0 4px 12px rgba(190, 150, 190, 0.55);
+    animation: ldBounce 1.15s ease-in-out infinite;
+  }
+  @keyframes ldBounce {
+    0%, 60%, 100% { transform: translateY(0) scale(1, 1); }
+    25% { transform: translateY(-14px) scale(0.96, 1.06); }
+    45% { transform: translateY(2px) scale(1.05, 0.94); }
+  }
+  .loadbar-wrap {
+    position: absolute; left: 10%; bottom: 9%; width: 80%;
+  }
+  .loadbar-char {
+    position: absolute; bottom: 14px; left: 0; width: 54px; height: 54px;
+    transform: translateX(-50%);
+    transition: left .08s linear;
+  }
+  .loadbar-char img { width: 100%; height: 100%; object-fit: contain;
+    filter: drop-shadow(0 4px 3px rgba(140,110,140,0.35));
+    animation: walk .45s ease-in-out infinite; }
+  @keyframes walk { 0%,100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-6px) rotate(4deg); } }
+  .loadbar-track {
+    height: 18px; border-radius: 999px; background: rgba(255,255,255,0.65);
+    border: 2px solid #fff; box-shadow: 0 3px 8px rgba(150,120,150,0.25); overflow: hidden;
+  }
+  .loadbar-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, #ffd3e2, #ff9ec2);
+    border-radius: 999px; transition: width .08s linear;
+  }
+  .loadbar-pct { text-align: center; margin-top: 6px; font-weight: 800; color: #d16a92;
+    font-size: 14px; text-shadow: 0 1px 0 #fff; }
+
+  /* 메뉴 */
+  .menu { margin-top: 0; margin-bottom: 7%; display: flex; flex-direction: column;
+    align-items: center; gap: 14px; animation: pop .35s ease both; }
+  @keyframes pop { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .btn {
+    appearance: none; border: none; cursor: pointer; font-family: inherit; font-weight: 800;
+    color: #fff; border-radius: 999px; letter-spacing: 1px;
+    transition: transform .06s, box-shadow .06s, filter .1s;
+  }
+  .btn:hover { filter: brightness(1.05); }
+  .btn:active { transform: translateY(4px); }
+  /* 이미지 CTA 버튼 (게임 시작 / 상점) */
+  .btn-img {
+    appearance: none; border: none; cursor: pointer;
+    padding: 0; background: none; display: block;
+    filter: drop-shadow(0 6px 10px rgba(224,112,154,0.3));
+    transition: transform .08s, filter .1s;
+  }
+  .btn-img img { width: 100%; height: auto; display: block; }
+  .btn-img:hover { filter: drop-shadow(0 6px 10px rgba(224,112,154,0.3)) brightness(1.05); }
+  .btn-img:active { transform: translateY(3px) scale(.97); }
+  .btn-play { width: min(250px, 62%); }   /* 좁은 화면에서 함께 축소 */
+  .btn-shop { width: min(175px, 43%); }
+  .btn-sub {
+    font-size: 16px; padding: 10px 30px; min-width: 150px;
+    background: linear-gradient(180deg, #b6e3a6 0%, #8fce7f 100%);
+    box-shadow: 0 5px 0 #5fa64f, 0 8px 14px rgba(95,166,79,0.35);
+  }
+  .btn-sub:active { box-shadow: 0 1px 0 #5fa64f, 0 3px 8px rgba(95,166,79,0.35); }
+  /* 시작 화면 우상단 설정(기어 쿠키) 버튼 */
+  .settings-hud {
+    position: absolute; top: 10px; right: 10px; z-index: 3;
+    appearance: none; border: none; cursor: pointer;
+    padding: 0; background: none;
+    width: 46px; height: 46px;
+    filter: drop-shadow(0 3px 6px rgba(150,100,150,0.35));
+    transition: transform .15s, filter .1s;
+    animation: pop .35s ease both;
+  }
+  .settings-hud img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .settings-hud:hover { filter: drop-shadow(0 3px 6px rgba(150,100,150,0.35)) brightness(1.06); transform: rotate(24deg); }
+  .settings-hud:active { transform: rotate(24deg) scale(.92); }
+
+  /* 게임오버 / 패널 카드 */
+  .card {
+    background: rgba(255,252,254,0.94); border-radius: 22px; padding: 26px 30px; text-align: center;
+    box-shadow: 0 12px 30px rgba(150,110,140,0.3); margin: auto; animation: pop .35s ease both;
+    max-width: 82%;
+  }
+  .card h1 { margin: 4px 0 6px; font-size: 38px; color: #6b4a60; text-shadow: 0 2px 0 #ffd9e8; }
+  .card .tag { color: #a06f8c; font-size: 15px; margin: 0 0 12px; font-weight: bold; }
+  .card .score { color: #8a6a80; font-size: 18px; font-weight: bold; margin: 6px 0; }
+  .card .newbest { color: #ff6b9d; font-size: 20px; font-weight: bold; margin: 8px 0; }
+  .coin-ico { width: 20px; height: 20px; object-fit: contain; vertical-align: -4px; margin-right: 2px; }
+  .card .mochi-load { width: 92px; height: 92px; object-fit: contain; margin-bottom: 4px;
+    animation: bob .7s ease-in-out infinite; }
+  @keyframes bob { 0%,100% { transform: translateY(0) scale(1,1); } 50% { transform: translateY(-14px) scale(.96,1.04); } }
+  .card .row { display: flex; gap: 10px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+  .card p.msg { color: #8a6a80; font-size: 15px; line-height: 1.7; margin: 8px 0 4px; }
+
+  /* ---- 게임오버 카드 (리디자인) ---- */
+  .go-card {
+    position: relative; width: 86%; max-width: 330px; margin: auto;
+    background: linear-gradient(180deg, #fff8ef 0%, #fdeede 100%);
+    border: 3px solid #f2d7bc; border-radius: 30px;
+    padding: 74px 20px 20px; text-align: center;
+    box-shadow: 0 16px 40px rgba(180,140,110,0.3);
+    animation: pop .35s ease both;
+  }
+  .go-char {
+    position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
+    width: 140px; height: 140px; object-fit: contain;
+    filter: drop-shadow(0 8px 8px rgba(160,130,110,0.28));
+    animation: bob .95s ease-in-out infinite;
+  }
+  .go-title {
+    margin: 0; font-family: 'Jua', sans-serif; font-size: 40px; color: #6b4423;
+    line-height: 1; text-shadow: 0 3px 0 #f0dcc4;
+  }
+  .go-title .fl { color: #ffa6c6; font-size: 22px; vertical-align: 8px; margin: 0 10px; }
+  .go-sub { font-family: 'Jua', sans-serif; color: #bd8f63; font-size: 15px; margin: 9px 0 0; }
+  .go-newbest { color: #ff6b9d; font-family: 'Jua', sans-serif; font-size: 15px; margin: 8px 0 0; }
+  .go-divider { border: none; border-top: 2px dashed #ecd7c0; margin: 14px 12px; }
+  .go-stats { display: flex; gap: 9px; justify-content: center; margin: 4px 0 18px; }
+  .go-stat {
+    flex: 1 1 0; background: #fffdf8; border: 2px solid #efdac0;
+    border-radius: 18px 18px 15px 15px; padding: 12px 2px 9px;
+    box-shadow: inset 0 2px 3px rgba(255,255,255,0.9), 0 3px 6px rgba(190,150,110,0.14);
+  }
+  .go-stat .ic { height: 26px; line-height: 26px; font-size: 21px; }
+  .go-stat .ic img { width: 25px; height: 25px; object-fit: contain; vertical-align: middle; }
+  .go-stat .st { color: #f0a92a; }
+  .go-stat .v { font-family: 'Baloo 2', 'Jua', sans-serif; font-weight: 800; font-size: 25px;
+    color: #5f3d1f; margin: 3px 0 1px; line-height: 1.1; }
+  .go-stat .l { font-family: 'Jua', sans-serif; font-size: 12px; color: #a5794f; }
+  .go-retry {
+    display: flex; align-items: center; justify-content: center; gap: 9px;
+    width: 100%; padding: 15px 0; border: none; cursor: pointer; box-sizing: border-box;
+    border-radius: 999px; font-family: 'Jua', sans-serif; font-size: 25px; color: #fff;
+    background: linear-gradient(180deg, #ff9ec0 0%, #f26d99 100%);
+    box-shadow: 0 6px 0 #d9557f, 0 10px 16px rgba(217,85,127,0.35);
+    transition: transform .06s, box-shadow .06s;
+  }
+  .go-retry .ri { font-size: 24px; line-height: 1; }
+  .go-retry:hover { filter: brightness(1.04); }
+  .go-retry:active { transform: translateY(4px); box-shadow: 0 2px 0 #d9557f, 0 4px 10px rgba(217,85,127,0.35); }
+  .go-home {
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    margin-top: 13px; padding: 9px 26px; border: 2px solid #ecd5b6; cursor: pointer;
+    border-radius: 999px; font-family: 'Jua', sans-serif; font-size: 16px; color: #a5794f;
+    background: linear-gradient(180deg, #fffdf8, #fbeedb);
+    box-shadow: 0 3px 0 #e6cfae; transition: transform .06s, box-shadow .06s;
+  }
+  .go-home img { width: 20px; height: 20px; object-fit: contain; }
+  .go-home:active { transform: translateY(2px); box-shadow: 0 1px 0 #e6cfae; }
+
+  /* ---- 설정 카드 ---- */
+  .set-card {
+    position: relative; width: 86%; max-width: 320px; margin: auto;
+    background: linear-gradient(180deg, #fdf4e6 0%, #f9ecd9 100%);
+    border: 3px solid #f0dcc0; border-radius: 30px;
+    padding: 52px 20px 20px; text-align: center;
+    box-shadow: 0 16px 40px rgba(180,150,110,0.3);
+    animation: pop .35s ease both;
+  }
+  .set-top {
+    position: absolute; top: -44px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; justify-content: center;
+    filter: drop-shadow(0 6px 7px rgba(170,140,110,0.28));
+  }
+  .set-top .m { width: 82px; height: 82px; object-fit: contain; }
+  .set-top .g { width: 44px; height: 44px; object-fit: contain; margin-left: -16px; margin-top: -20px;
+    animation: gearSpin 6s linear infinite; }
+  @keyframes gearSpin { to { transform: rotate(360deg); } }
+  .set-title {
+    margin: 4px 0 16px; font-family: 'Jua', sans-serif; font-size: 34px; color: #7a5334;
+    line-height: 1; text-shadow: 0 3px 0 #efdcc2;
+  }
+  .set-title .spk { color: #ffb0c4; font-size: 18px; vertical-align: 6px; margin: 0 12px; }
+  .set-row {
+    display: flex; align-items: center; gap: 12px;
+    background: #fffdf8; border: 2px solid #f2e2cc; border-radius: 18px;
+    padding: 12px 14px; margin: 0 0 12px;
+    box-shadow: inset 0 2px 3px rgba(255,255,255,0.9), 0 3px 6px rgba(190,160,120,0.12);
+  }
+  .set-row .ico { width: 26px; height: 26px; object-fit: contain; flex: none; }
+  .set-row .label { font-family: 'Jua', sans-serif; font-size: 17px; color: #6d5238; flex: 1; text-align: left; }
+  /* 토글 스위치 */
+  .toggle {
+    position: relative; width: 72px; height: 32px; flex: none;
+    appearance: none; border: none; cursor: pointer; padding: 0;
+    border-radius: 999px; transition: background .2s;
+    box-shadow: inset 0 2px 5px rgba(150,110,90,0.22);
+  }
+  .toggle.on  { background: linear-gradient(180deg, #ffc2d6, #ff9fbe); }
+  .toggle.off { background: linear-gradient(180deg, #e4ded4, #cec6ba); }
+  .toggle .txt {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    font-family: 'Jua', sans-serif; font-size: 12px; color: #fff; letter-spacing: .5px;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.12);
+  }
+  .toggle.on  .txt { left: 13px; }
+  .toggle.off .txt { right: 11px; }
+  .toggle .knob {
+    position: absolute; top: 50%; width: 28px; height: 28px; object-fit: contain;
+    transform: translateY(-50%); transition: left .2s cubic-bezier(.3,1.3,.5,1);
+    filter: drop-shadow(0 2px 2px rgba(150,110,90,0.3));
+  }
+  .toggle.on  .knob { left: calc(100% - 30px); }
+  .toggle.off .knob { left: 2px; }
+  .set-divider { border: none; border-top: 2px dashed #ecd9bf; margin: 16px 8px; }
+  .set-reset {
+    display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+    margin: 0 auto 12px; padding: 11px 26px; border: 2px solid #efdcc0; cursor: pointer;
+    border-radius: 999px; font-family: 'Jua', sans-serif; font-size: 16px; color: #9a734b;
+    background: linear-gradient(180deg, #fffdf8, #f7ead6);
+    box-shadow: 0 4px 0 #e7d2b2; transition: transform .06s, box-shadow .06s;
+  }
+  .set-reset img { width: 20px; height: 20px; object-fit: contain; }
+  .set-reset:active { transform: translateY(2px); box-shadow: 0 2px 0 #e7d2b2; }
+  .set-close {
+    display: block; width: 100%; box-sizing: border-box; padding: 14px 0; border: none; cursor: pointer;
+    border-radius: 999px; font-family: 'Jua', sans-serif; font-size: 22px; color: #fff;
+    background: linear-gradient(180deg, #ffb3cb 0%, #f487a8 100%);
+    box-shadow: 0 6px 0 #de6f93, 0 10px 16px rgba(222,111,147,0.32);
+    transition: transform .06s, box-shadow .06s;
+  }
+  .set-close .face { color: rgba(255,255,255,0.85); font-size: 15px; margin: 0 12px; letter-spacing: 2px; }
+  .set-close:active { transform: translateY(4px); box-shadow: 0 2px 0 #de6f93, 0 4px 10px rgba(222,111,147,0.32); }
+  .btn-back {
+    font-size: 15px; padding: 9px 26px;
+    background: linear-gradient(180deg, #cdb8d6 0%, #ab8fbe 100%);
+    box-shadow: 0 4px 0 #8a6ba0, 0 6px 12px rgba(138,107,160,0.3);
+  }
+  /* 게임오버 홈(메뉴) 이미지 버튼 */
+  .btn-home {
+    appearance: none; border: none; cursor: pointer;
+    width: 56px; height: 56px; padding: 0; background: none;
+    filter: drop-shadow(0 4px 6px rgba(138,107,160,0.4));
+    transition: transform .06s, filter .1s;
+  }
+  .btn-home img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .btn-home:hover { filter: drop-shadow(0 4px 6px rgba(138,107,160,0.4)) brightness(1.06); }
+  .btn-home:active { transform: translateY(3px) scale(.94); }
+  .btn-replay { width: 132px; } /* 홈 버튼과 높이(56px)를 맞춘 가로형 리플레이 버튼 */
+
+  /* ---- 상점 (카드형) ---- */
+  .shop-frame { position: relative; height: 100%; aspect-ratio: 1200 / 1800; margin: 0 auto; }
+  .shop-bg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .shop-back {
+    position: absolute; top: 10px; left: 10px; z-index: 4;
+    appearance: none; border: none; cursor: pointer;
+    padding: 0; background: none;
+    width: 46px; height: 46px;
+    filter: drop-shadow(0 3px 6px rgba(150,100,150,0.35));
+    transition: transform .06s, filter .1s;
+    opacity: .92;
+  }
+  .shop-back img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .shop-back:hover { filter: drop-shadow(0 3px 6px rgba(150,100,150,0.35)) brightness(1.06); opacity: 1; }
+  .shop-back:active { transform: translateY(2px) scale(.94); }
+  /* 상단 코인 알약 위 잔액 표시 (코인 아이콘은 이미지에 포함) */
+  .cur-coin {
+    position: absolute; top: 27.4%; height: 4.2%;
+    left: 74%; width: 17%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 14px; color: #7a5a3a; pointer-events: none;
+  }
+  .shop-grid {
+    position: absolute; left: 7%; right: 7%; top: 40%; bottom: 8.5%;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 8px;
+    align-content: start; overflow-y: auto; padding: 4px 3px 8px;
+    scrollbar-width: thin;
+  }
+  .skin-card {
+    background: #fffdf6; border: 2px solid #eed9c3; border-radius: 14px;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 7px 6px 8px; gap: 6px;
+    box-shadow: 0 3px 6px rgba(180,140,110,0.15);
+  }
+  .skin-card .ttl {
+    width: 100%; box-sizing: border-box; text-align: center;
+    font-size: 10.5px; font-weight: 800; color: #9a6a52;
+    background: #fdf1e4; border: 1.5px solid #ecd3b8; border-radius: 999px;
+    padding: 3px 2px; white-space: nowrap; overflow: hidden;
+  }
+  .skin-card img { width: 74%; aspect-ratio: 1; object-fit: contain;
+    filter: drop-shadow(0 3px 3px rgba(150,120,120,0.22)); }
+  .skin-btn {
+    appearance: none; border: none; cursor: pointer; font-family: inherit;
+    width: 100%; padding: 5px 0; border-radius: 999px;
+    font-size: 11.5px; font-weight: 800; color: #fff; letter-spacing: .5px;
+    background: linear-gradient(180deg, #ff9db8 0%, #f2789c 100%);
+    border: 1.5px solid #e7688e;
+    box-shadow: 0 2.5px 0 #d55a80;
+  }
+  .skin-btn:active { transform: translateY(2px); box-shadow: 0 .5px 0 #d55a80; }
+  .skin-btn.own {
+    background: #fff; color: #e7688e;
+  }
+  .skin-btn.equipped {
+    background: linear-gradient(180deg, #b6e3a6 0%, #8fce7f 100%);
+    border-color: #6fae5f; box-shadow: 0 2.5px 0 #5fa64f; cursor: default;
+  }
+  .shop-caption {
+    position: absolute; left: 12%; right: 12%; bottom: 2.1%; transform: translateY(-50%);
+    text-align: center; font-size: clamp(8px, 2.5vw, 14px); font-weight: 800; color: #a9764f;
+    white-space: nowrap; pointer-events: none; z-index: 4;
+  }
+  .shop-modal {
+    position: absolute; inset: 0; z-index: 10; display: flex;
+    align-items: center; justify-content: center;
+    background: rgba(70,45,35,0.38); opacity: 0; pointer-events: none;
+    transition: opacity .15s ease;
+  }
+  .shop-modal.show { opacity: 1; pointer-events: auto; }
+  .shop-modal-card {
+    background: linear-gradient(180deg, #fffdf6 0%, #fff3e2 100%);
+    border: 3px solid #f7c9a6; border-radius: 24px;
+    padding: 22px 28px 18px; text-align: center; max-width: 76%;
+    box-shadow: 0 14px 30px rgba(150,100,80,0.35);
+    animation: pop .22s ease both;
+  }
+  .shop-modal-card .icon { width: 52px; height: 52px; object-fit: contain;
+    display: block; margin: 0 auto 6px;
+    animation: bob .7s ease-in-out infinite; }
+  .shop-modal-card .msg { font-size: 14px; font-weight: 800; color: #8a5a42;
+    line-height: 1.6; margin: 4px 0 16px; }
+  .shop-modal-card button {
+    appearance: none; border: none; cursor: pointer; font-family: inherit;
+    font-weight: 800; color: #fff; border-radius: 999px; padding: 9px 34px;
+    font-size: 13px; letter-spacing: .5px;
+    background: linear-gradient(180deg, #ff9db8 0%, #f2789c 100%);
+    border: 1.5px solid #e7688e; box-shadow: 0 3px 0 #d55a80;
+  }
+  .shop-modal-card button:active { transform: translateY(2px); box-shadow: 0 1px 0 #d55a80; }
