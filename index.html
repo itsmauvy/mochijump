@@ -453,7 +453,9 @@
     shopbtn: 'img/shop button.png',
     scoreboard: 'img/scoreboard ui.png',
     bestboard: 'img/highest score.png',
-    failcry: 'img/mochi fail cry.png'
+    failcry: 'img/mochi fail cry.png',
+    bg1: 'img/bg1.png', bg2: 'img/bg2.png', bg3: 'img/bg3.png',
+    bg4: 'img/bg4.png', bg5: 'img/bg5.png', bg6: 'img/bg6.png'
   };
   // 페이지 로드 시각을 버전으로 붙여 캐시 무효화 (이미지 수정 후 새로고침만 하면 반영)
   const IMGVER = Date.now();
@@ -692,7 +694,8 @@
       onGround: true,
       groundPlatform: platforms[0],
       invuln: 0,
-      dropTimer: 0
+      dropTimer: 0,
+      dropThrough: null
     };
     coyote = 0; jumpBuffer = 0;
     clouds = [];
@@ -717,6 +720,7 @@
       keys.down = true;
       // 발판 위에 있으면 뚫고 아래로 내려감
       if (state === 'playing' && player.onGround) {
+        player.dropThrough = player.groundPlatform;   // 이 발판만 통과 (아래 발판은 정상 착지)
         player.onGround = false;
         player.groundPlatform = null;
         player.dropTimer = DROP_TIME;
@@ -760,6 +764,7 @@
       jumpBuffer = 0;      // 예약된 점프 취소
       keys.down = true;    // 빠른 하강 (키보드 ↓ 와 동일)
       if (player.onGround) { // 발판 위면 뚫고 내려감
+        player.dropThrough = player.groundPlatform;   // 이 발판만 통과
         player.onGround = false;
         player.groundPlatform = null;
         player.dropTimer = DROP_TIME;
@@ -859,11 +864,12 @@
       if (!within || g.broken) { player.onGround = false; player.groundPlatform = null; coyote = COYOTE_TIME; }
     }
 
-    // 착지 / 부스터 / 함정 (하강 중, 공중, 스윕 체크 — ↓ 로 뚫는 중엔 통과)
-    if (!player.onGround && player.vy > 0 && player.dropTimer <= 0) {
+    // 착지 / 부스터 / 함정 (하강 중, 공중, 스윕 체크 — ↓ 로 뚫는 그 발판만 통과)
+    if (!player.onGround && player.vy > 0) {
       const newBottom = player.y + player.h / 2;
       for (const p of platforms) {
         if (p.broken) continue;
+        if (p === player.dropThrough) continue;   // 뚫고 내려가는 중인 그 발판만 무시
         const withinX = player.x + player.w * 0.32 > p.x && player.x - player.w * 0.32 < p.x + p.w;
         if (withinX && prevBottom <= p.y + 2 && newBottom >= p.y) {
           if (p.type === 'break') { p.broken = true; p.fallVy = 130; continue; }
@@ -888,6 +894,8 @@
 
     if (player.landTimer > 0) player.landTimer -= dt;
     if (player.dropTimer > 0) player.dropTimer -= dt;
+    // 뚫던 발판을 완전히 지나쳤거나 제한 시간이 지나면 다시 충돌 허용
+    if (player.dropThrough && (player.dropTimer <= 0 || player.y - player.h / 2 > player.dropThrough.y)) player.dropThrough = null;
     if (!player.onGround && coyote > 0) coyote -= dt;
     if (jumpBuffer > 0) jumpBuffer -= dt;
     if (player.invuln > 0) { player.invuln -= dt; if (player.invuln < 0) player.invuln = 0; }
@@ -961,44 +969,32 @@
     ctx.closePath();
   }
 
+  // ---- 배경 이미지 (높이별 크로스페이드) ----
+  const BGIMGS = ['bg1', 'bg2', 'bg3', 'bg4', 'bg5', 'bg6'];
+  const BG_THRESH = [0, 1500, 3500, 6000, 9000, 12500]; // 각 배경이 지배적이 되는 높이
+  const BG_BLEND = 1200;                                 // 크로스페이드 구간
+  function drawBgCover(imgKey, alpha) {
+    const im = IMG[imgKey];
+    if (!ready(im) || alpha <= 0) return;
+    const s = Math.max(W / im.naturalWidth, H / im.naturalHeight); // 화면을 꽉 채우는 cover 스케일
+    const dw = im.naturalWidth * s, dh = im.naturalHeight * s;
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(im, (W - dw) / 2, (H - dh) / 2, dw, dh);
+    ctx.globalAlpha = 1;
+  }
   function drawBackground(theme) {
-    const g = ctx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, rgb(theme.top));
-    g.addColorStop(0.5, rgb(theme.mid));
-    g.addColorStop(1, rgb(theme.bot));
-    ctx.fillStyle = g;
+    // 이미지 로딩 전 대비 기본 하늘색 채움
+    ctx.fillStyle = rgb(theme.top);
     ctx.fillRect(0, 0, W, H);
-
-    if (theme.star > 0.02) {
-      for (const s of stars) {
-        const tw = 0.55 + 0.45 * Math.sin(nowSec * 2 + s.tw);
-        ctx.fillStyle = `rgba(255,255,240,${(theme.star * tw).toFixed(3)})`;
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.fillStyle = `rgba(255,244,200,${(theme.star * 0.9).toFixed(3)})`;
-      ctx.beginPath();
-      ctx.arc(W - 70, 90, 26, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = `rgba(0,0,0,0.08)`;
-      ctx.beginPath();
-      ctx.arc(W - 78, 84, 6, 0, Math.PI * 2);
-      ctx.arc(W - 62, 98, 4, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    const cloudA = 0.75 * (1 - theme.star * 0.85);
-    if (cloudA > 0.03) {
-      ctx.fillStyle = `rgba(255,255,255,${cloudA.toFixed(3)})`;
-      for (const c of clouds) {
-        const s = c.s;
-        ctx.beginPath();
-        ctx.ellipse(c.x, c.y, 34*s, 14*s, 0, 0, Math.PI*2);
-        ctx.ellipse(c.x + 22*s, c.y + 4*s, 22*s, 11*s, 0, 0, Math.PI*2);
-        ctx.ellipse(c.x - 24*s, c.y + 5*s, 20*s, 10*s, 0, 0, Math.PI*2);
-        ctx.fill();
-      }
+    // 현재 높이 구간 배경
+    let i = 0;
+    for (let k = 0; k < BG_THRESH.length; k++) { if (totalScroll >= BG_THRESH[k]) i = k; }
+    drawBgCover(BGIMGS[i], 1);
+    // 다음 배경으로 크로스페이드 (임계값 도달 전 BG_BLEND 구간에서 서서히 겹침)
+    if (i < BGIMGS.length - 1) {
+      const nextT = BG_THRESH[i + 1];
+      const f = clamp((totalScroll - (nextT - BG_BLEND)) / BG_BLEND, 0, 1);
+      drawBgCover(BGIMGS[i + 1], f);
     }
   }
 
@@ -1536,7 +1532,7 @@
       },
       forceReady() { state = 'ready'; updateOverlay(); return 'ready'; },
       start() { startGame(); return this.info(); },
-      dropKey() { keys.down = true; if (player.onGround) { player.onGround = false; player.groundPlatform = null; player.dropTimer = DROP_TIME; player.vy = Math.max(player.vy, 180); } return this.info(); },
+      dropKey() { keys.down = true; if (player.onGround) { player.dropThrough = player.groundPlatform; player.onGround = false; player.groundPlatform = null; player.dropTimer = DROP_TIME; player.vy = Math.max(player.vy, 180); } return this.info(); },
       dropRelease() { keys.down = false; },
       tick(n, dt) { dt = dt || 1 / 60; for (let i = 0; i < (n || 1); i++) { nowSec += dt; update(dt); } render(); return this.info(); },
       info() { return { v: 5, state, deathBy, score, totalScroll: Math.round(totalScroll), platforms: platforms.length, monsters: monsters.length, items: items.length, invuln: +player.invuln.toFixed(2), py: Math.round(player.y), vy: Math.round(player.vy), ground: player.onGround, drop: +player.dropTimer.toFixed(2) }; }
