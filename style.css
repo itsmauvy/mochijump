@@ -11,9 +11,9 @@
   }
   #wrap {
     position: relative;
-    /* 창이 좁든 넓든 항상 2:3 비율 유지 (비율 깨짐/이미지 잘림 방지) */
-    width: min(96vw, calc(96vh * 2 / 3));
-    aspect-ratio: 400 / 600;
+    /* 창이 좁든 넓든 항상 9:16 비율 유지 (비율 깨짐/이미지 잘림 방지) */
+    width: min(96vw, calc(96vh * 400 / 711));
+    aspect-ratio: 400 / 711;
     border-radius: 16px;
     box-shadow: 0 8px 40px rgba(180, 140, 180, 0.25);
   }
@@ -335,7 +335,8 @@
   .btn-replay { width: 132px; } /* 홈 버튼과 높이(56px)를 맞춘 가로형 리플레이 버튼 */
 
   /* ---- 상점 (카드형) ---- */
-  .shop-frame { position: relative; height: 100%; aspect-ratio: 1200 / 1800; margin: 0 auto; }
+  /* 상점 아트가 9:16(941×1672)이라 프레임을 wrap에 꽉 채움 */
+  .shop-frame { position: relative; width: 100%; height: 100%; aspect-ratio: 941 / 1672; margin: auto; }
   .shop-bg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
   .shop-back {
     position: absolute; top: 10px; left: 10px; z-index: 4;
@@ -351,13 +352,13 @@
   .shop-back:active { transform: translateY(2px) scale(.94); }
   /* 상단 코인 알약 위 잔액 표시 (코인 아이콘은 이미지에 포함) */
   .cur-coin {
-    position: absolute; top: 27.4%; height: 4.2%;
-    left: 74%; width: 17%;
+    position: absolute; top: 30.2%; height: 3.8%;
+    left: 71.5%; width: 20%;
     display: flex; align-items: center; justify-content: center;
     font-weight: 800; font-size: 14px; color: #7a5a3a; pointer-events: none;
   }
   .shop-grid {
-    position: absolute; left: 7%; right: 7%; top: 40%; bottom: 8.5%;
+    position: absolute; left: 8%; right: 8%; top: 44%; bottom: 9%;
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 8px;
     align-content: start; overflow-y: auto; padding: 4px 3px 8px;
     scrollbar-width: thin;
@@ -393,7 +394,7 @@
     border-color: #6fae5f; box-shadow: 0 2.5px 0 #5fa64f; cursor: default;
   }
   .shop-caption {
-    position: absolute; left: 12%; right: 12%; bottom: 2.1%; transform: translateY(-50%);
+    position: absolute; left: 25%; right: 25%; bottom: 3.5%; transform: translateY(-50%);
     text-align: center; font-size: clamp(8px, 2.5vw, 14px); font-weight: 800; color: #a9764f;
     white-space: nowrap; pointer-events: none; z-index: 4;
   }

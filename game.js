@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const W = 400, H = 600;
+  const W = 400, H = 711;   // 9:16 비율 (400 × 711 ≈ 0.5625)
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
 
