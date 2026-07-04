@@ -107,14 +107,13 @@
   }
   function ready(im) { return im && im.complete && im.naturalWidth > 0; }
 
-  // ---- 오디오 (Web Audio: 효과음·배경음악 모두 오실레이터 합성) ----
-  let audioCtx = null, sfxGain = null, bgmGain = null;
+  // ---- 오디오 (효과음: Web Audio 오실레이터 합성 / 배경음악: mp3 파일) ----
+  let audioCtx = null, sfxGain = null;
   try {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (AC) {
       audioCtx = new AC();                 // 생성 시엔 suspended, 사용자 입력 후 resume
       sfxGain = audioCtx.createGain(); sfxGain.gain.value = 1.0; sfxGain.connect(audioCtx.destination);
-      bgmGain = audioCtx.createGain(); bgmGain.gain.value = 0.42; bgmGain.connect(audioCtx.destination);
     }
   } catch (e) { audioCtx = null; }
   // 사운드 on/off (설정에서 토글, localStorage 유지)
@@ -167,53 +166,24 @@
     tone(262, 0.36, 0.45, 'triangle', 0.30);
   }
 
-  // ---- 배경음악 (합성 루프, C장조 펜타토닉의 몽글한 멜로디 + 베이스) ----
-  const NOTE = {
-    'F2': 87.31, 'G2': 98.00, 'A2': 110.00, 'C3': 130.81,
-    'A4': 440.00, 'C5': 523.25, 'D5': 587.33, 'E5': 659.25,
-    'G5': 783.99, 'A5': 880.00, 'C6': 1046.50, 0: 0
-  };
-  const BGM_BPM = 118, BEAT = 60 / BGM_BPM, STEP = BEAT / 2; // 8분음표 스텝
-  const MELODY = [
-    'E5','G5','A5','G5', 'E5','D5','C5', 0,
-    'D5','E5','G5','E5', 'D5','C5','D5', 0,
-    'E5','G5','A5','C6', 'A5','G5','E5', 0,
-    'D5','E5','D5','C5', 'A4','C5','D5', 0
-  ];
-  const BASS = ['C3','C3','A2','A2','F2','F2','G2','G2']; // 4스텝마다 (C-Am-F-G)
-  let bgmStep = 0, bgmNextTime = 0;
-  function bgmNote(freq, t, dur, type, peak) {
-    if (!freq || !audioCtx) return;
-    const osc = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, t);
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.linearRampToValueAtTime(peak, t + 0.03);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    osc.connect(g).connect(bgmGain);
-    osc.start(t); osc.stop(t + dur + 0.05);
+  // ---- 배경음악 (mp3 파일 루프 재생) ----
+  const bgmAudio = new Audio('bg music.mp3');
+  bgmAudio.loop = true;
+  bgmAudio.volume = 0.42;
+  bgmAudio.preload = 'auto';
+  function playBgm() { if (!bgmOn) return; const p = bgmAudio.play(); if (p && p.catch) p.catch(() => {}); }
+  function scheduleBgm() {   // 게임 루프에서 매 프레임 호출 — 자동재생 차단 대비, 재생 상태 유지
+    if (bgmOn) { if (bgmAudio.paused) playBgm(); }
+    else if (!bgmAudio.paused) bgmAudio.pause();
   }
-  function scheduleBgm() {   // 게임 루프에서 매 프레임 호출 (앞으로 여유분만 예약)
-    if (!audioCtx || !bgmOn || audioCtx.state !== 'running') return;
-    if (bgmNextTime < audioCtx.currentTime) bgmNextTime = audioCtx.currentTime + 0.05; // 백그라운드 복귀 시 재동기화
-    while (bgmNextTime < audioCtx.currentTime + 0.2) {
-      const t = bgmNextTime;
-      const mel = MELODY[bgmStep % MELODY.length];
-      if (mel) bgmNote(NOTE[mel], t, STEP * 0.95, 'triangle', 0.13);
-      if (bgmStep % 4 === 0) {
-        const b = BASS[Math.floor(bgmStep / 4) % BASS.length];
-        if (b) bgmNote(NOTE[b], t, BEAT * 1.7, 'sine', 0.15);
-      }
-      bgmStep++;
-      bgmNextTime += STEP;
-    }
+  function setBgm(on) {
+    bgmOn = on; localStorage.setItem('mochijump-bgm', on ? '1' : '0');
+    if (on) playBgm(); else bgmAudio.pause();
   }
-  function setBgm(on) { bgmOn = on; localStorage.setItem('mochijump-bgm', on ? '1' : '0'); if (on && audioCtx) { bgmNextTime = audioCtx.currentTime + 0.05; resumeAudio(); } }
   function setSfx(on) { sfxOn = on; localStorage.setItem('mochijump-sfx', on ? '1' : '0'); }
   // 브라우저 자동재생 정책: 어떤 입력(버튼 클릭 포함)에서든 오디오 활성화
   ['pointerdown', 'click', 'keydown', 'touchstart'].forEach(ev =>
-    document.addEventListener(ev, resumeAudio, { passive: true }));
+    document.addEventListener(ev, () => { resumeAudio(); playBgm(); }, { passive: true }));
 
   // ---- 높이별 배경 테마 (낮 → 노을 → 밤 → 우주) ----
   const THEMES = [
@@ -1220,7 +1190,7 @@
       getSkin() { return equippedSkin; },
       addCoins(n) { coins += n; saveShop(); return coins; },
       getShop() { return { coins, owned: [...ownedSkins], equipped: equippedSkin }; },
-      audioState() { return { ctx: audioCtx ? audioCtx.state : 'none', bgmOn, sfxOn, bgmStep }; },
+      audioState() { return { ctx: audioCtx ? audioCtx.state : 'none', bgmOn, sfxOn, bgmPaused: bgmAudio.paused }; },
       setBgm(v) { setBgm(v); return bgmOn; },
       setSfx(v) { setSfx(v); return sfxOn; },
       spawnMonster() { monsters.push({ x: player.x, y: player.y, vx: 0, bob: 0, phase: 0, hue: 0 }); },
